@@ -87,19 +87,19 @@ def main():  # pragma: no cover
         print("\n###### Created/Updated SageMaker Pipeline: Response received:")
         print(upsert_response)
 
-        # execution = pipeline.start()
-        # print(f"\n###### Execution started with PipelineExecutionArn: {execution.arn}")
+        execution = pipeline.start()
+        print(f"\n###### Execution started with PipelineExecutionArn: {execution.arn}")
 
-        # print("Waiting for the execution to finish...")
+        print("Waiting for the execution to finish...")
 
-        # # Setting the attempts and delay (in seconds) will modify the overall time the pipeline waits. 
-        # # If the execution is taking a longer time, update these parameters to a larger value.
-        # # Eg: The total wait time is calculated as 60 * 120 = 7200 seconds (2 hours)
-        # execution.wait(max_attempts=120, delay=60)
+        # Setting the attempts and delay (in seconds) will modify the overall time the pipeline waits. 
+        # If the execution is taking a longer time, update these parameters to a larger value.
+        # Eg: The total wait time is calculated as 60 * 120 = 7200 seconds (2 hours)
+        execution.wait(max_attempts=120, delay=60)
         
-        # print("\n#####Execution completed. Execution step details:")
+        print("\n#####Execution completed. Execution step details:")
 
-        # print(execution.list_steps())
+        print(execution.list_steps())
         # Todo print the status?
     except Exception as e:  # pylint: disable=W0703
         print(f"Exception: {e}")
