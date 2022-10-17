@@ -314,6 +314,25 @@ def save_features(user_type, features):
 	sparse.save_npz(os.path.join('/opt/ml/processing/test', f"X-test-{user_type}-{features_suffix}"), x_test)
 	np.save(os.path.join('/opt/ml/processing/test', f"X-test-{user_type}-user-practices"), df_user_practices)
 
+def update_pipeline_count(table):
+	try:
+		table.update_item(
+			Key= {
+				'pk': 'CONTROL1',
+				'sk': 'PIPELINE'
+			},
+			UpdateExpression='SET count = count + 1 SET updatedAt = :updated_at',
+			ExpressionAttributeValues={
+				':updated_at': f"{datetime.utcnow().isoformat()[:-3]}Z"
+			}
+		)
+	except ClientError as err:
+		print(
+			"Couldn't update pipeline control count Here's why: %s: %s",
+			err.response['Error']['Code'],
+			err.response['Error']['Message'])
+		raise
+
 
 def process_practices(endpoint_url):
 	session = boto3.Session()
@@ -323,6 +342,8 @@ def process_practices(endpoint_url):
 	)
 
 	practices_table = dynamodb.Table('dps_dev_practice')
+
+	update_pipeline_count(practices_table)
 
 	# TODO Include skill matrix later
 	num_items, num_skills = Q_mat.shape
