@@ -321,8 +321,9 @@ def update_pipeline_count(table):
 				'pk': 'CONTROL1',
 				'sk': 'PIPELINE'
 			},
-			UpdateExpression='SET count = count + 1 SET updatedAt = :updated_at',
+			UpdateExpression='SET count = count + :inc_1 SET updatedAt = :updated_at',
 			ExpressionAttributeValues={
+				':inc_1': 1,
 				':updated_at': f"{datetime.utcnow().isoformat()[:-3]}Z"
 			}
 		)
