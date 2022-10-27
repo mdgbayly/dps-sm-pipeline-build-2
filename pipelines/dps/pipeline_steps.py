@@ -300,7 +300,7 @@ def save_features(user_type, features):
 		return
 
 	# User and item one hot encodings
-	one_hot = OneHotEncoder()
+	one_hot = OneHotEncoder(handle_unknown='irgnore')
 	if 'u' in active_features:
 		one_hot_user(one_hot, features)
 
