@@ -154,8 +154,8 @@ def get_pipeline(
     framework_version = "0.23-1"
 
     ###########################
-    # Encode Step
-    encode_processor = SKLearnProcessor(
+    # Shared? Processor
+    pipeline_processor = SKLearnProcessor(
         framework_version=framework_version,
         instance_type=processing_instance_type,
         instance_count=processing_instance_count,
@@ -164,7 +164,7 @@ def get_pipeline(
         sagemaker_session=pipeline_session,
     )
 
-    encode_args = encode_processor.run(
+    encode_args = pipeline_processor.run(
         code=os.path.join(BASE_DIR, "encode.py"),
         outputs=[
             ProcessingOutput(
@@ -181,18 +181,7 @@ def get_pipeline(
     
     step_encode = ProcessingStep(name="PracticeEncode", step_args=encode_args)
     
-    ###########################
-    # Training and Evaluation Step
-    train_processor = SKLearnProcessor(
-        framework_version=framework_version,
-        instance_type=processing_instance_type,
-        instance_count=processing_instance_count,
-        base_job_name=f"{base_job_prefix}/sklearn-dps-train",
-        role=role,
-        sagemaker_session=pipeline_session,
-    )
-
-    train_args = train_processor.run(
+    train_args = pipeline_processor.run(
         code=os.path.join(BASE_DIR, "train_eval_lr.py"),
         inputs=[
             ProcessingInput(
@@ -215,18 +204,7 @@ def get_pipeline(
 
     step_train = ProcessingStep(name="PracticeTrain", step_args=train_args)
 
-    ###########################
-    # Update RPD Step
-    update_processor = SKLearnProcessor(
-        framework_version=framework_version,
-        instance_type=processing_instance_type,
-        instance_count=processing_instance_count,
-        base_job_name=f"{base_job_prefix}/sklearn-dps-update-rpd",
-        role=role,
-        sagemaker_session=pipeline_session,
-    )
-
-    update_args = update_processor.run(
+    update_args = pipeline_processor.run(
         code=os.path.join(BASE_DIR, "update_rpd.py"),
         inputs=[
             ProcessingInput(
