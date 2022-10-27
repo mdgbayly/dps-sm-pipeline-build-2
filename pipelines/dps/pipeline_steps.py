@@ -339,6 +339,16 @@ def update_pipeline_count(table):
 		raise
 
 
+def default_values(entry):
+	if 'timestamp' not in entry:
+		entry['timestamp'] = []
+	
+	if 'correct' not in entry:
+		entry['correct'] = []
+	
+	return entry
+
+
 def process_practices_step(endpoint_url):
 	session = boto3.Session()
 
@@ -386,7 +396,7 @@ def process_practices_step(endpoint_url):
 						user_entries = []
 					current_user = user
 
-				user_entries.append(r)
+				user_entries.append(default_values(r))
 
 			start_key = response.get('LastEvaluatedKey', None)
 			done = start_key is None
