@@ -187,7 +187,7 @@ def get_pipeline(
         ]
     )
     
-    steps = ProcessingStep(name="PracticeEncode", step_args=steps_args)
+    steps = ProcessingStep(name="PracticesModel", step_args=steps_args)
     
     # pipeline instance
     pipeline = Pipeline(
