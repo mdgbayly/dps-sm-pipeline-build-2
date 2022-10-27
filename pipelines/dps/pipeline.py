@@ -164,8 +164,8 @@ def get_pipeline(
         sagemaker_session=pipeline_session,
     )
 
-    encode_args = pipeline_processor.run(
-        code=os.path.join(BASE_DIR, "encode.py"),
+    steps_args = pipeline_processor.run(
+        code=os.path.join(BASE_DIR, "pipeline_steps.py"),
         outputs=[
             ProcessingOutput(
                 output_name='train_data',
@@ -174,53 +174,21 @@ def get_pipeline(
             ProcessingOutput(
                 output_name='test_data',
                 source='/opt/ml/processing/test/'
-            )
-        ],
-        arguments=['-i', '-u', '-ic', '-a', '-w', '-tw']
-    )
-    
-    step_encode = ProcessingStep(name="PracticeEncode", step_args=encode_args)
-    
-    train_args = pipeline_processor.run(
-        code=os.path.join(BASE_DIR, "train_eval_lr.py"),
-        inputs=[
-            ProcessingInput(
-                source=step_encode.properties.ProcessingOutputConfig.Outputs["train_data"].S3Output.S3Uri,
-                destination='/opt/ml/processing/train'
             ),
-            ProcessingInput(
-                source=step_encode.properties.ProcessingOutputConfig.Outputs["test_data"].S3Output.S3Uri,
-                destination='/opt/ml/processing/test'
-            )
-        ],
-        outputs=[
             ProcessingOutput(
                 output_name='model_data',
                 source='/opt/ml/processing/model/'
             )
         ],
-        arguments=['--X_train_file', 'X-train-G-uiicwatw.npz', '--X_test_file', 'X-test-G-uiicwatw.npz', '--user_type', 'G']
+        arguments=[
+            '-i', '-u', '-ic', '-a', '-w', '-tw',
+            '--X_train_file', 'X-train-G-uiicwatw.npz', '--X_test_file', 'X-test-G-uiicwatw.npz', '--user_type', 'G',
+            '--X_user_practices', 'X-test-G-user-practices.npy', '--y_predictions', 'y-pred-test-G-uiicwatw.npy'
+        ]
     )
-
-    step_train = ProcessingStep(name="PracticeTrain", step_args=train_args)
-
-    update_args = pipeline_processor.run(
-        code=os.path.join(BASE_DIR, "update_rpd.py"),
-        inputs=[
-            ProcessingInput(
-                source=step_train.properties.ProcessingOutputConfig.Outputs["model_data"].S3Output.S3Uri,
-                destination='/opt/ml/processing/model'
-            ),
-            ProcessingInput(
-                source=step_encode.properties.ProcessingOutputConfig.Outputs["test_data"].S3Output.S3Uri,
-                destination='/opt/ml/processing/test'
-            )
-        ],
-        arguments=['--X_user_practices', 'X-test-G-user-practices.npy', '--y_predictions', 'y-pred-test-G-uiicwatw.npy']
-    )
-
-    step_update = ProcessingStep(name="PracticeUpdateRpd", step_args=update_args)
-
+    
+    steps = ProcessingStep(name="PracticesModel", step_args=steps_args)
+    
     # pipeline instance
     pipeline = Pipeline(
         name=pipeline_name,
@@ -228,7 +196,7 @@ def get_pipeline(
             processing_instance_type,
             processing_instance_count
         ],
-        steps=[step_encode, step_train, step_update],
+        steps=[steps],
         sagemaker_session=pipeline_session,
     )
     return pipeline
