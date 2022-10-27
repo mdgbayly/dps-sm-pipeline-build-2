@@ -533,7 +533,6 @@ if __name__ == '__main__':
 	parser.add_argument('--iter', type=int, default=1000)
 	
 	# Update RPD arguments
-	parser.add_argument('--endpoint_url', type=str)
 	parser.add_argument('--X_user_practices', type=str)
 	parser.add_argument('--y_predictions', type=str)
 
