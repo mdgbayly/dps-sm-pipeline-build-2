@@ -13,7 +13,10 @@ from scipy.sparse import load_npz, csr_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, accuracy_score, log_loss, brier_score_loss
 import joblib
+import logging
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 class TimeWindowQueue:
 	"""A queue for counting efficiently the number of events within time windows.
@@ -300,7 +303,7 @@ def save_features(user_type, features):
 		return
 
 	# User and item one hot encodings
-	one_hot = OneHotEncoder(handle_unknown='irgnore')
+	one_hot = OneHotEncoder(handle_unknown='ignore')
 	if 'u' in active_features:
 		one_hot_user(one_hot, features)
 
@@ -555,11 +558,15 @@ if __name__ == '__main__':
 	# TODO Include Q Matrix later
 	Q_mat = np.empty((0, 0))
 
-	print('*** Encoding Step ***')
-	process_practices_step(args.endpoint_url)
+	try:
+		print('*** Encoding Step ***')
+		process_practices_step(args.endpoint_url)
 
-	print('*** Training Step ***')
-	train_eval_step(args)
+		print('*** Training Step ***')
+		train_eval_step(args)
 
-	print('*** Update RPD Step ***')
-	update_rpd_step(args)
+		print('*** Update RPD Step ***')
+		update_rpd_step(args)
+
+	except Exception as Argument:
+		logger.exception("Pipeline failed")
