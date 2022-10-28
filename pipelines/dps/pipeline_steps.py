@@ -328,8 +328,9 @@ def update_pipeline_count(table):
 				'pk': 'CONTROL1',
 				'sk': 'PIPELINE'
 			},
-			UpdateExpression='SET tally = tally + :inc_1, updatedAt = :updated_at',
+			UpdateExpression='SET tally = if_not_exists(tally, :inc_0) + :inc_1, updatedAt = :updated_at',
 			ExpressionAttributeValues={
+				':inc_0': 0,
 				':inc_1': 1,
 				':updated_at': f"{datetime.utcnow().isoformat()[:-3]}Z"
 			}
@@ -345,10 +346,10 @@ def update_pipeline_count(table):
 def default_values(entry):
 	if 'timestamp' not in entry:
 		entry['timestamp'] = []
-	
+
 	if 'correct' not in entry:
 		entry['correct'] = []
-	
+
 	return entry
 
 
@@ -544,7 +545,7 @@ if __name__ == '__main__':
 	parser.add_argument('--X_test_file', type=str)
 	parser.add_argument('--user_type', type=str)
 	parser.add_argument('--iter', type=int, default=1000)
-	
+
 	# Update RPD arguments
 	parser.add_argument('--X_user_practices', type=str)
 	parser.add_argument('--y_predictions', type=str)
