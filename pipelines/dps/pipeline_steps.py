@@ -446,16 +446,17 @@ THRESHOLD = 0.3
 
 
 def update_item_user_rpd(table, practice, user, prediction):
-	rpd = str(prediction - THRESHOLD)
+	rpd = abs(prediction - THRESHOLD)
 	try:
 		table.update_item(
 			Key= {
 				'pk': practice,
 				'sk': user
 			},
-			UpdateExpression='SET gsi_1_sk = :rpd',
+			UpdateExpression='SET gsi_1_sk = :rpd, gsi_3_sk = :rp',
 			ExpressionAttributeValues={
-				':rpd': rpd
+				':rpd': str(rpd),
+				':rp': str(prediction)
 			}
 		)
 	except ClientError as err:
