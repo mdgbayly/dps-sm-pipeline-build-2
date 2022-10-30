@@ -572,3 +572,4 @@ if __name__ == '__main__':
 
 	except Exception as Argument:
 		logger.exception("Pipeline failed")
+		raise
