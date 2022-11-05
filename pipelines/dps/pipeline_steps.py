@@ -321,12 +321,12 @@ def save_features(user_type, features):
 	sparse.save_npz(os.path.join('/opt/ml/processing/test', f"X-test-{user_type}-{encode_features_suffix}"), x_test)
 	np.save(os.path.join('/opt/ml/processing/test', f"X-test-{user_type}-user-practices"), df_user_practices)
 
-def update_pipeline_count(table):
+def update_pipeline_count(table, user_type):
 	try:
 		table.update_item(
 			Key= {
 				'pk': 'CONTROL1',
-				'sk': 'PIPELINE'
+				'sk': f'PIPELINE_{user_type}'
 			},
 			UpdateExpression='SET tally = if_not_exists(tally, :inc_0) + :inc_1, updatedAt = :updated_at',
 			ExpressionAttributeValues={
@@ -353,7 +353,7 @@ def default_values(entry):
 	return entry
 
 
-def process_practices_step(endpoint_url):
+def process_practices_step(endpoint_url, user_type):
 	session = boto3.Session()
 
 	dynamodb = session.resource(
@@ -362,7 +362,7 @@ def process_practices_step(endpoint_url):
 
 	practices_table = dynamodb.Table('dps_dev_practice')
 
-	update_pipeline_count(practices_table)
+	update_pipeline_count(practices_table, user_type)
 
 	# TODO Include skill matrix later
 	num_items, num_skills = Q_mat.shape
@@ -373,13 +373,14 @@ def process_practices_step(endpoint_url):
 		Q_mat_dict[i].add(j)
 
 	features = {
-		'G': init_features(num_skills),
-		'U': init_features(num_skills)
+		user_type: init_features(num_skills)
 	}
+
+	bin = "1" if user_type == "G" else "0"
 
 	query_kwargs = {
 		'IndexName': "gsi-2",
-		'KeyConditionExpression': Key('gsi_2_pk').eq("1")
+		'KeyConditionExpression': Key('gsi_2_pk').eq(bin)
 	}
 	try:
 		done = False
@@ -412,8 +413,7 @@ def process_practices_step(endpoint_url):
 			err.response['Error']['Message'])
 		raise
 
-	save_features('G', features['G'])
-	save_features('U', features['U'])
+	save_features(user_type, features[user_type])
 
 
 def train_eval_step(args):
@@ -562,7 +562,7 @@ if __name__ == '__main__':
 
 	try:
 		print('*** Encoding Step ***')
-		process_practices_step(args.endpoint_url)
+		process_practices_step(args.endpoint_url, args.user_type)
 
 		print('*** Training Step ***')
 		train_eval_step(args)

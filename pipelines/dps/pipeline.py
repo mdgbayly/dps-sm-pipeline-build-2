@@ -128,6 +128,7 @@ def get_pipeline(
     model_package_group_name="DpsPackageGroup",
     pipeline_name="DpsPipeline",
     base_job_prefix="Dps",
+    user_type="U",
     processing_instance_type="ml.t3.medium",
     training_instance_type="ml.m5.large",
 ):
@@ -182,8 +183,8 @@ def get_pipeline(
         ],
         arguments=[
             '-i', '-u', '-ic', '-a', '-w', '-tw',
-            '--X_train_file', 'X-train-G-uiicwatw.npz', '--X_test_file', 'X-test-G-uiicwatw.npz', '--user_type', 'G',
-            '--X_user_practices', 'X-test-G-user-practices.npy', '--y_predictions', 'y-pred-test-G-uiicwatw.npy'
+            '--X_train_file', f'X-train-{user_type}-uiicwatw.npz', '--X_test_file', f'X-test-{user_type}-uiicwatw.npz', '--user_type', f'{user_type}',
+            '--X_user_practices', f'X-test-{user_type}-user-practices.npy', '--y_predictions', f'y-pred-test-{user_type}-uiicwatw.npy'
         ]
     )
     
@@ -191,7 +192,7 @@ def get_pipeline(
     
     # pipeline instance
     pipeline = Pipeline(
-        name=pipeline_name,
+        name=f'{pipeline_name}-{user_type}',
         parameters=[
             processing_instance_type,
             processing_instance_count
